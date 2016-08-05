@@ -1,0 +1,114 @@
+#!/bin/sh
+# This program takes directories as input and looks for programs
+# that use the crypt function of glibc
+
+if [ -h /lib ] ; then
+	libdirs="/usr/lib /usr/lib64"
+else
+	libdirs="/lib /lib64 /usr/lib /usr/lib64"
+fi
+if [ -h /bin ] ; then
+	progdirs="/usr/bin /usr/sbin /usr/libexec"
+else
+	progdirs="/bin /sbin /usr/bin /usr/sbin /usr/libexec"
+fi
+FOUND=0
+
+check() {
+	xx=`readelf -s $1 | awk 'NF>7 { print $8}' 2>/dev/null`
+	if [ x"$xx" != "x" ] ; then
+		func=""
+ 		echo "$xx" | grep -w 'bcopy@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="bcopy"
+		fi
+		echo "$xx" | grep -w 'bcmp@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="bcmp"
+		fi
+		res=`echo "$xx" | grep -w 'gets@.*GLIBC.*'`
+		if [ x$func = "x" -a x$res != "x" ] ; then
+			func="gets"
+		fi
+		echo "$xx" | grep -w 'getwd@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="getwd"
+		fi
+		echo "$xx" | grep -w 'mktemp@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="mktemp"
+		fi
+		echo "$xx" | grep -w 'tmpnam@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="tmpnam"
+		fi
+		echo "$xx" | grep -w 'rindex@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="rindex"
+		fi
+		echo "$xx" | grep -w 'index@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="index"
+		fi
+		echo "$xx" | grep -w 'getpass@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="getpass"
+		fi
+		echo "$xx" | grep -w 'valloc@.*GLIBC.*' >/dev/null
+		if [ x$func = "x" -a $? -eq 0 ] ; then
+			func="valloc"
+		fi
+		if [ x"$func" != "x" ] ; then
+			FOUND=1
+			package=`rpm -qf --queryformat "%{NAME}-%{VERSION}" $1 2>/dev/null`
+			if [ $? -eq 1 ] ; then
+				package="Not Owned"
+			fi
+			ls -l $1 | awk -v f="$func" -v p="$package" '{ printf "%-46s\t%-10s\t%s\n", $9, f, p}'
+		fi
+	fi
+}
+
+scan () {
+	if [ "$1" = "1" ] ; then
+		dirs=$libdirs
+	elif [ "$1" = "2" ] ; then
+		dirs=$progdirs
+	elif [ "$1" = "3" ] ; then
+		dirs=$3
+	fi
+
+	for d in $dirs ; do
+		if [ ! -d $d ] ; then
+			continue
+		fi
+		files=`/usr/bin/find $d -name "$2" -type f 2>/dev/null`
+		for f in $files
+		do
+			echo $f | /usr/bin/file -n -f - 2>/dev/null | grep ELF >/dev/null
+			if [ $? -eq 0 ] ; then
+				check $f
+			fi
+		done
+	done
+}
+
+if [ $# -eq 1 ] ; then
+	if [ -d $1 ] ; then
+		scan 3 '*' $1
+	else
+		echo "Input is not a directory"
+		exit 1
+	fi
+else
+	scan 1 '*.so'
+	scan 2 '*'
+fi
+
+if [ $FOUND -eq 0 ] ; then
+	# Nothing to report, just exit
+	echo "No problems found" 1>&2
+	exit 0
+fi
+exit 1
+

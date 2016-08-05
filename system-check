@@ -104,7 +104,12 @@ fi
 echo -e "\nLook for ELF binaries with well known tmp files" | tee -a $output
 echo      "===============================================" | tee -a $output
 ./find-elf4tmp | tee -a $output
-				
+
+echo -e "\nLook for ELF binaries using deprecated functions" | tee -a $output
+echo      "================================================" | tee -a $output
+./find-legacy | tee -a $output
+
+
 echo -e "\nSetuid security check" | tee -a $output
 echo      "=====================" | tee -a $output
 ./find-suid | awk '{ print $1 }' > list.log
