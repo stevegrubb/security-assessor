@@ -1,0 +1,38 @@
+#!/bin/sh
+# Service start/stop avc finder utility 0.1
+# Copyright (c) 2006 Steve Grubb. ALL RIGHTS RESERVED.
+# sgrubb@redhat.com
+#
+# This software may be freely redistributed under the terms of the GNU
+# public license Version 2.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+# This program will scan all files in /etc/rc.d/init.d and check the
+# status of each service. If its on, it will turn it off and then on. If
+# its off, it will turn it on and off. After each one, it will check for
+# avcs.
+
+# List of services that we should skip for various reasons
+serv_skip_list="auditd|firstboot|functions|halt|killall|single|ypbind|kdump|amtu|reboot"
+files=`ls /etc/rc.d/init.d/ | egrep -v $serv_skip_list`
+net="$SSH_TTY"
+echo $files
+sleep 5
+
+for f in $files
+do
+	if [ x"$net" != "x" ] ; then
+		if [ "$f" = "network" -o "$f" = "sshd" -o "$f" = "NetworkManager" ] ; then
+			echo "SKIPPING service $f"
+			continue
+		fi
+	fi
+
+	echo "Restarting...$f"
+	service $f restart 2>&1
+done
+
+

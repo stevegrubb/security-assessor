@@ -1,0 +1,4 @@
+1) Locate privileged processes that call getenv
+2) Determine how isolated a running process is
+3) Determine setuid apps that do not call setcap or setresuid
+4) Check mount options for tmpfs that are world writable

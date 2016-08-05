@@ -1,0 +1,3 @@
+#!/bin/sh
+netstat -tlp --numeric-hosts 2>/dev/null | grep '^t' | tr '/' ' ' | awk '{ printf "%-15s\t%s\n", $8, $4 }' | sort
+netstat -ulp --numeric-hosts 2>/dev/null | grep '^u' | tr '/' ' ' | awk '{ printf "%-15s\t%s\n", $7, $4 }' | sort

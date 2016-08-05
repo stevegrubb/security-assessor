@@ -1,0 +1,129 @@
+#!/bin/sh
+# chkstk
+#
+# Copyright (c) 2011-2013 Steve Grubb. ALL RIGHTS RESERVED.
+# sgrubb@redhat.com
+#
+# This software may be freely redistributed under the terms of the GNU
+# public license.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# Given an rpm, it will look at each file to check that its compiled with 
+# the intended flags to make it more secure. This tests for stack protector.
+#
+# If the --all option is given, it will generate a list of rpms and then
+# summarize the rpm's state. For yes, then all files are in the expected
+# state. Just one file not compiled with the right flags can turn the
+# answer to no. Re-run passing that package (instead of --all) for the details.
+
+VERSION="0.5.2"
+
+usage () {
+	echo "chksec [--version|--all|<rpmname>...]"
+	if [ $EUID != 0 ] ; then
+		echo "You might need to be root to read some files"
+	fi
+	exit 0
+}
+
+if [ "$1" = "--help" -o $# -eq 0 ] ; then
+	usage
+fi
+if [ "$1" = "--all" ] ; then
+	MODE="all"
+else
+	MODE="single"
+fi
+
+do_one () {
+if ! rpm -q $1 >/dev/null 2>&1 ; then
+	if [ "$MODE" = "single" ] ; then
+		echo "$1 is not installed"
+		exit 1
+	else
+		echo "not installed"
+		return
+	fi
+fi
+files=`rpm -ql $1`
+
+# Prevent garbled output when doing --all.
+skip_current=0
+
+for f in $files
+do
+	if [ ! -f "$f" ] ; then
+		continue
+	fi
+	# Some packages have files with ~ in them. This avoids it.
+	if ! echo "$f" | grep '^/' >/dev/null ; then
+		continue
+	fi
+	if [ ! -r "$f" ] && [ $EUID != 0 ] ; then
+		if [ $MODE = "single" ] ; then
+			echo "Please re-test $f as the root user"
+		else
+			# Don't print results.
+			skip_current=1
+			echo "Please re-test $1 as the root user"
+		fi
+		continue
+	fi
+	if ! file "$f" | grep -qw 'ELF'; then
+		continue
+	fi
+	STACK="no"
+	if readelf -s "$f" 2>/dev/null | grep -q '__stack_chk_fail'; then
+		STACK="yes"
+	fi
+	APP=""
+
+	# OK, ready for the output
+	if [ "$MODE" = "single" ] ; then
+		printf "%-56s %-7s " "$f" "$STACK"
+		echo
+	else
+		if [ "$STACK" = "no" ] ; then
+			STACK_SUM="no"
+		fi
+	fi
+done
+}
+
+if [ "$MODE" = "single" ] ; then
+	printf "%-56s %-10s" "FILE" "STACK"
+	echo
+	for i; do
+		f=$(basename $1)
+		# Strip the .rpm extension, if present.
+		do_one ${f%%.rpm}
+		shift
+	done
+	exit 0
+fi
+
+# Skip the kernel as its special
+packages=`rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | egrep -v 'kernel.|debuginfo.|.noarch|gpg-pubkey' | sort`
+printf "%-50s  %-5s" "PACKAGE" "STACK"
+echo
+for p in $packages
+do
+	STACK_SUM="yes"
+	APP_SUM=""
+	printf "%-50s  " $p
+	do_one $p
+	if [[ $skip_current -eq 1 ]] ; then
+		continue
+	fi
+	if [ "$STACK_SUM" = "yes" ] ; then
+		printf "%-5s  " "$STACK_SUM"
+	else
+		printf "%-5s  " "$STACK_SUM"
+	fi
+	echo
+done
+exit 0
+

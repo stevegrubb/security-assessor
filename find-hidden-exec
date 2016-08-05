@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# This program looks for hidden executables
+
+find / -name '.*' -type f -perm /00111 2>/dev/null
+
+# Also need to find hidden dirs and see if anything below it is hidden
+hidden_dirs=`find / -name '.*' -type d 2>/dev/null`
+for d in $hidden_dirs
+do
+	find $d -name '.*' -type f -perm /00111 2>/dev/null
+done

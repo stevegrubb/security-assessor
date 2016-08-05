@@ -1,0 +1,48 @@
+#!/bin/sh
+# yum update file context checker 0.1
+# Copyright (c) 2006 Steve Grubb. ALL RIGHTS RESERVED.
+# sgrubb@redhat.com
+#
+# This software may be freely redistributed under the terms of the GNU
+# public license Version 2.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# This program will look at the yum logs to see what updates have
+# recently been installed and check for files that are mislabled.
+
+olog="check.log"
+ilog="/var/log/yum.log"
+if [ $# -eq 1 ] ; then
+	today="$1"
+elif [ $# -eq 2 ] ; then
+	today="$1 $2"
+else
+	today=`date '+%b %0e'`
+fi
+if [ x"$today" = "x" ] ; then
+	echo "today is empty - aborting"
+	exit 1
+fi
+if [ ! -f $ilog ] ; then
+	echo "$ilog not found - aborting"
+	exit 1
+fi
+trap "rm -f $olog; exit 1" 1 2 3 5 15
+
+list=`cat $ilog* | grep -i "^$today" | awk '{ print $5 }' | sed '/^[1-9]:/s///g'`
+#echo $list|tr ' ' '\n';  exit 0
+if [ x"$list" = "x" ] ; then
+	echo "No updates for $today...so no problems"
+	exit 0
+fi
+
+echo "Checking updates for $today...found `echo $list | wc -w` updates"
+for p in "$list"
+do
+	./rpm-chksec $p
+done
+
+exit 0

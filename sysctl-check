@@ -1,0 +1,2 @@
+#!/bin/sh
+sysctl -a 2>/dev/null | egrep 'fs.protected_hardlinks|fs.protected_symlinks|kernel.dmesg_restrict|kernel.perf_event_paranoid|kernel.randomize_va_space|kernel.usermodehelper.bset|kernel.usermodehelper.inheritable|vm.legacy_va_layout'

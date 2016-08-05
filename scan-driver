@@ -1,0 +1,50 @@
+#!/bin/sh
+# To save to file: ./scan-driver | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee findings.txt
+
+infile="./list.log"
+check_program="./checksec.sh"
+
+if [ ! -e $infile ] ; then
+	echo "The infile file needs updating"
+	exit 1
+fi
+if [ ! -e $check_program ] ; then
+	echo "The check_program needs updating"
+	exit 1
+fi
+
+while read l
+do
+	if [ -e "$l" ] ; then
+		f="$l"
+	else
+		t=`which $l 2>/dev/null`
+		if [ x"$t" != "x" ] ; then
+			f="$t"
+		else
+			echo "$l can't be found"
+			exit 1
+		fi
+	fi
+        if [ -h $f ] ; then
+        	f=`readlink $f`
+		if [ ! -e $f ] ; then
+			t=`which $f 2>/dev/null`
+			if [ x"$t" != "x" ] ; then
+				f="$t"
+			fi
+		else
+			echo "Can't find $f"
+			continue
+		fi
+	fi
+	test=`echo $f | file -n -f - | grep 'ELF'`
+	if [ x"$test" = x ] ; then
+		echo "$f is not an ELF file...not checked"
+		echo
+		continue
+	fi
+	$check_program --file $f --ldd
+	echo
+done < $infile
+

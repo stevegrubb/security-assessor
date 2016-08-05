@@ -1,0 +1,4 @@
+No installation, just run right where it is. The main program
+is system-check. There is another program that grades an rpm,
+rpm-chksec to see if basic protection is in place. Everything
+else is helper scripts. The output is check.log.

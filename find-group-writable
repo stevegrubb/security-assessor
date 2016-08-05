@@ -1,0 +1,10 @@
+#!/bin/sh
+if [ -h /bin ] ; then
+	dirs="/boot /etc /tmp /usr /var/account /var/cache /var/crash /var/db /var/gdm /var/lib /var/local /var/lock /var/nis /var/run /var/tmp /var/www /var/yp"
+else
+	dirs="/bin /boot /etc /lib /lib64 /sbin /tmp /usr /var/account /var/cache /var/crash /var/db /var/gdm /var/lib /var/local /var/lock /var/nis /var/run /var/tmp /var/www /var/yp"
+fi
+for d in $dirs; do
+	echo "Scanning $d ..."
+	find $d -type f -perm -00020 -printf "%-60p %g\t%M\n" 2>/dev/null
+done

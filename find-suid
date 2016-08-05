@@ -1,0 +1,29 @@
+#!/bin/sh
+types="ELF|python|perl|tcl"
+
+display () {
+	while [ $# -ge 1 ]
+	do
+		type=`file $1 | egrep -wo $types 2>/dev/null`
+		package=`rpm -qf --queryformat "%{NAME}-%{VERSION}" $1 2>/dev/null`
+		if [ $? -eq 1 ] ; then
+			package="Not Owned"
+		fi
+		ls -l $1 | awk '{ printf "%-44s %-10s %-6s %s\n", $9, $3, t, p} ' t="$type" p="$package"
+		shift
+	done
+}
+
+if [ ! -h /bin ] ; then
+	files=`find /bin -type f -perm -04000 2>/dev/null`
+	display $files
+	files=`find /sbin -type f -perm -04000 2>/dev/null`
+	display $files
+fi
+files=`find /usr -type f -perm -04000 2>/dev/null`
+display $files
+files=`find /var -type f -perm -04000 2>/dev/null`
+display $files
+files=`find /tmp -type f -perm -04000 2>/dev/null`
+display $files
+

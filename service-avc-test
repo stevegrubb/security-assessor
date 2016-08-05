@@ -1,0 +1,81 @@
+#!/bin/sh
+# Service start/stop avc finder utility 0.1
+# Copyright (c) 2006,2012 Steve Grubb. ALL RIGHTS RESERVED.
+# sgrubb@redhat.com
+#
+# This software may be freely redistributed under the terms of the GNU
+# public license Version 2.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+# This program will scan all files in /etc/rc.d/init.d and check the
+# status of each service. If its on, it will turn it off and then on. If
+# its off, it will turn it on and off. After each one, it will check for
+# avcs.
+
+# List of services that we should skip for various reasons
+serv_skip_list="auditd|firstboot|functions|halt|killall|single|ypbind"
+files=`ls /etc/rc.d/init.d/ | egrep -v $serv_skip_list`
+if [ -e /bin/systemctl ] ; then
+	files="$files `systemctl list-unit-files --type=service | grep enable | awk '{ print $1 }' | sed '/\.service/s///'`"
+fi
+
+net="$SSH_TTY"
+
+for f in $files
+do
+	if [ x"$net" != "x" ] ; then
+		if [ "$f" = "network" -o "$f" = "sshd" -o "$f" = "NetworkManager" ] ; then
+			echo "SKIPPING service $f"
+			continue
+		fi
+	fi
+
+	# get time
+	ts=`date +"%T"`
+	if [ ! -e /bin/systemctl ] ; then
+		service $f status 2>/dev/null | grep -i running >/dev/null 2>&1
+		if [ "$?" -ne 0 ] ; then
+			# service is stopped
+			service $f start >/dev/null 2>&1
+			sleep 5
+			service $f stop >/dev/null 2>&1
+		else
+			# service is running
+			service $f stop >/dev/null 2>&1
+			sleep 5
+			service $f start >/dev/null 2>&1
+		fi
+	else
+		systemctl -q is-active $f.service 2>/dev/null
+		if [ "$?" -ne 0 ] ; then
+			# service is stopped
+			systemctl start $f.service >/dev/null 2>&1
+			sleep 5
+			service stop $f.service >/dev/null 2>&1
+		else
+			# service is running
+			systemctl stop $f.service >/dev/null 2>&1
+			sleep 5
+			systemctl start $f.service >/dev/null 2>&1
+		fi
+	fi
+	sleep 1
+	te=`date +"%T"`
+	avcs=`ausearch -m avc,user_avc -ts $ts -te $te --raw 2>/dev/null` 
+	if [ $? -eq 0 ] ; then
+		echo "AVCs found for service $f - audit2allow:"
+		echo $avcs | audit2allow 1>&2
+	else
+		echo "Service $f is OK" 
+	fi
+done
+
+echo "This test may have made daemons unstable, you should reboot"
+read ANS
+if [ x"`echo $ANS | grep [Yy]`" != "x" ] ; then
+	reboot
+fi
+

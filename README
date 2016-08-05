@@ -1,0 +1,93 @@
+The security assessor is a suite of tools that work together to create a
+report about the installed software. It looks for various software issues
+and does not consider the configuration of anything. It should be used
+as a prerelease tool to assess if permissions and safe coding has been
+employed. To use the tool, run the following as root: ./system-check
+It will produce a file, check.log with the results.
+
+The generated report uses the following tests:
+1) STIG file permission scan. This follows the guidelines laid out in the
+DISA 2011 Unix STIG and verifies that the permissions are correct.
+2) Executable stack scan. This checks all ELF binaries for stack permissions.
+Best practices dictate that you should not have an executable stack.
+3) Hidden executable scan. All executables should be out in the open where
+a simple 'ls' can see it. Any hidden executables should be investigated
+as to why they are there.
+4) Supplemental Group test. This checks the /etc/group file to see if there
+are any supplemental groups. If so they are output. This is needed to correctly
+interpret the threat that is found by test #5.
+5) Group writable files. This test shows which files have a group writable
+permission and which group is allowed to write. These should be investigated to
+see if the permissions are too generous.
+6) World writable files. This scans the whole system to see if there are any
+files that are world writable. There should not be any.
+7) List all file system based capability programs test. This scans all
+executable directories to see if anything is using the file system base
+capabilities.
+8) List all setuid test. This scans all executable directories to see what
+setuid programs are on the system. They should all be ELF format.
+9) List all setgid test. This scans all executable directories to see what
+setgid programs are on the system. They should all be ELF format.
+10) List all daemons enabled for runlevel 3. This test helps spot daemons that
+are on by default. In general, they should be off unless they affect the first
+booting or connection to the machine. They can all be enabled later. Daemons
+that are on increase the attack surface of the OS.
+11) Shell scripts with errors test. This scans the executable directories for
+shell scripts. When found its checks them to see if bash can spot any errors in
+the code.
+12) Shell scripts with well known tmp files test. This scans the executable
+directories for shell scripts. When found its checks them to see if they have
+an easily guessable temp file name. If so that can be an attack vector.
+13) ELF binaries with well known tmp files test. This scans the executable
+directories looking for ELF binaries. When found, it checks them to see if they
+are using easily guessable file names. This test also scans the symbol table to
+see if the names are being used with a function that makes a random name. If
+the temp file name is easily guessable, it can be an attack vector. ELF
+programs should use mkstemp or tmpfile to create hard to guess file names.
+14) Setuid security check. For each setuid app on the system, it will dump the
+state of security features from gcc/ld/and glibc that are in use for the
+program and any library it links to. Setuid programs should have full RELRO
+support, should use the stack protector, should use FORTIFY_SOURCE=2, and
+should have PIE support. All libraries should have partial RELRO and a couple
+with full RELRO. The stack protector and FORTIFY_SOURCE=2 should have been used
+in all libraries.
+15) Setgid security check. For each setgid app on the system, it will dump the
+state of security features from gcc/ld/and glibc that are in use for the
+program and any library it links to. Setuid programs should have full RELRO
+support, should use the stack protector, should use FORTIFY_SOURCE=2, and
+should have PIE support. All libraries should have partial RELRO and a couple
+with full RELRO. The stack protector and FORTIFY_SOURCE=2 should have been used
+in all libraries.
+16) Daemon security check. For each daemon listed by chkconfig on the system,
+it will dump the state of security features from gcc/ld/and glibc that are in
+use for the program and any library it links to. Setuid programs should have
+full RELRO support, should use the stack protector, should use FORTIFY_SOURCE=2,
+and should have PIE support. All libraries should have partial RELRO and a
+couple with full RELRO. The stack protector and FORTIFY_SOURCE=2 should have
+been used in all libraries.
+17) Apps not changing chroot correctly. This test will check the program to see
+if it calls chroot(2). If so, it further checks to see if chdir was used. If not
+then the program is reported.
+CWE-243: Creation of chroot Jail Without Changing Working Directory
+18) Python apps not changing chroot correctly. This test will check python
+programs to see if they call chroot(2). If so, it further checks to see if
+chdir was used. If not then the program is reported.
+CWE-243: Creation of chroot Jail Without Changing Working Directory
+19) Apps not changing groups correctly. This checks the program to see if it
+calls setgid and setuid or similar functions. If so, it checks to see if 
+setgroups or initgroups has been called. If not the program is reported.
+Supplemental groups must be correctly cleared or they remain in effect.
+CWE-271: Privilege Dropping / Lowering Errors
+20) Listening processes. This lists all processes that are listening. They
+represent an attack vector and should be minimized.
+21) Privileged listening processes. This test shows which processes are 
+listening on a port and have some raised privileges. This should be minimized.
+22) Unlabeled device check. SE Linux policy can't work correctly unless all
+devices have a label.
+23) Unlabeled files. This checks all files to see that they are labeled.
+24) Unconfined processes. This checks the running processes to see if they are
+labeled with initrc_t.
+25) Service start/stop AVC's test. This will start and stop all daemons on the
+system and see if any AVC's were produced. Just doing this should not produce
+any AVC's.
+

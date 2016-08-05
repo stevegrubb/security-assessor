@@ -1,0 +1,13 @@
+0.3
+- Add sysctl's test
+
+0.2
+- Fix daemon tests to use systemd info if it exists
+- Fix tests to not go into /bin, /sbin, /lib, and /lib64 if symlinks
+- Correct find-elf4tmp to suppress some kinds of tmp files found
+- Updated service-avc-test to use systemctl when available
+- Update rpm-chksec's scoring for F18 expectations
+
+0.1
+- Initial release
+

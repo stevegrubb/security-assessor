@@ -1,0 +1,198 @@
+#!/bin/sh
+VERSION="0.3"
+output="check.log"
+
+check="`which readelf 2>/dev/null`"
+if [ x$check = "x" ] ; then
+	echo "You need to install the binutils package"
+	exit 1
+fi
+check="`which netcap 2>/dev/null`"
+if [ x$check = "x" ] ; then
+	echo "You need to install the libcap-ng-utils package"
+	exit 1
+fi
+check="`which eu-strings 2>/dev/null`"
+if [ x$check = "x" ] ; then
+	echo "You need to install the elfutils package"
+	exit 1
+fi
+
+echo "Starting system-check $VERSION"
+if [ -e $output ] ; then
+	echo "$output already exists. Delete? [Y]"
+	read ANS
+	if [ x"`echo $ANS | grep [Yy]`" != "x" ] ; then
+		rm -f $output
+	else
+		exit 0
+	fi
+fi
+touch $output
+
+# Start by checking some kernel sysctls
+echo -e "Important kernel sysctl settings" | tee -a $output
+echo    "================================" | tee -a $output
+./sysctl-check | tee -a $output
+
+# Next file permissions
+echo -e "\nSTIG file permission scan" | tee -a $output
+echo      "=========================" | tee -a $output
+./stig-file-test.sh | tee -a $output
+
+echo -e "\nExecutable stack check" | tee -a $output
+echo      "======================" | tee -a $output
+./find-execstack | tee -a $output
+
+echo -e "\nHidden executable check" | tee -a $output
+echo      "=======================" | tee -a $output
+./find-hidden-exec | tee -a $output
+
+echo -e "\nSupplemental groups" | tee -a $output
+echo      "===================" | tee -a $output
+cat /etc/group | tr ':' ' '| awk '$4  { printf "%-16s\t%s\n", $1, $4 }' | tee -a $output
+
+echo -e "\nGroup writable files" | tee -a $output
+echo      "====================" | tee -a $output
+./find-group-writable | tee -a $output
+
+echo -e "\nWorld writable files" | tee -a $output
+echo      "====================" | tee -a $output
+./world-writable-files | tee -a $output
+
+
+# Process tests
+echo -e "\nList all file system based capability programs" | tee -a $output
+echo      "==============================================" | tee -a $output
+filecap 2> /dev/null | tee -a $output
+
+echo -e "\nList all setuid" | tee -a $output
+echo      "===============" | tee -a $output
+./find-suid | tee -a $output
+
+echo -e "\nList all setgid" | tee -a $output
+echo      "===============" | tee -a $output
+./find-sgid | tee -a $output
+
+echo -e "\nList all daemons enabled for runlevel 3" | tee -a $output
+echo      "=======================================" | tee -a $output
+chkconfig --list 2>/dev/null | grep 3:on | awk '{ print $1 }' | tee -a $output
+if [ -e /bin/systemctl ] ; then
+	systemctl list-unit-files --type=service | grep enable | awk '{ print $1 }' | sed '/\.service/s///' | tee -a $output
+fi
+
+echo -e "\nLook for shell scripts with errors" | tee -a $output
+echo      "==================================" | tee -a $output
+if [ ! -h /bin ] ; then
+	./find-sh4errors /sbin | tee -a $output
+	./find-sh4errors /bin | tee -a $output
+fi
+./find-sh4errors /usr/sbin | tee -a $output
+./find-sh4errors /usr/bin | tee -a $output
+./find-sh4errors /etc | tee -a $output
+
+echo -e "\nLook for shell scripts with well known tmp files" | tee -a $output
+echo      "================================================" | tee -a $output
+if [ ! -h /bin ] ; then
+	./find-sh4tmp /sbin | tee -a $output
+	./find-sh4tmp /bin | tee -a $output
+fi
+./find-sh4tmp /usr/sbin | tee -a $output
+./find-sh4tmp /usr/bin | tee -a $output
+./find-sh4tmp /etc | tee -a $output
+
+echo -e "\nLook for ELF binaries with well known tmp files" | tee -a $output
+echo      "===============================================" | tee -a $output
+./find-elf4tmp | tee -a $output
+				
+echo -e "\nSetuid security check" | tee -a $output
+echo      "=====================" | tee -a $output
+./find-suid | awk '{ print $1 }' > list.log
+./scan-driver | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee -a $output
+rm -f list.log
+
+echo -e "\nSetgid security check" | tee -a $output
+echo      "=====================" | tee -a $output
+./find-sgid | awk '{ print $1 }' > list.log
+./scan-driver | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee -a $output
+rm -f list.log
+
+echo -e "\nDaemon security check" | tee -a $output
+echo      "=====================" | tee -a $output
+touch list.log
+list=`chkconfig --list 2>/dev/null | grep 3:on | awk '{ print $1 }'`
+FOUND=0
+for f in $list
+do
+	t=`which $f 2>/dev/null`
+	if [ x"$t" != "x" ] ; then
+        	echo $t >> list.log
+	        continue
+	fi
+	t=`which "$f"d 2>/dev/null`
+	if [ x"$t" != "x" ] ; then
+        	echo $t >> list.log
+	        continue
+	fi
+	t=`cat /etc/rc.d/init.d/$f | grep 'bin' | grep 'exit 5' | grep -v '\$' 2>/dev/null`
+	if [ x"$t" != "x" ] ; then
+        	echo $t >> list.log
+	        continue
+	fi
+	echo "Can't find the executable in /etc/rc.d/init.d/$f" | tee -a $output
+	FOUND=1
+done
+if [ -e /bin/systemctl ] ; then
+	list2=`systemctl list-unit-files --type=service | grep enable | awk '{ print $1 }'`
+	for f in $list2
+	do
+		cat /usr/lib/systemd/system/$f 2>/dev/null | grep ExecStart | tr '=' ' ' | awk '{ print $2 }' >> list.log
+	done
+fi
+if [ $FOUND -eq 1 ] ; then
+	echo
+fi
+./scan-driver | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee -a $output
+rm -f list.log
+
+echo -e "\nLook for ELF apps not changing chroot correctly" | tee -a $output
+echo      "===============================================" | tee -a $output
+./find-chroot   | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee -a $output
+
+echo -e "\nLook for Python apps not changing chroot correctly" | tee -a $output
+echo      "==================================================" | tee -a $output
+./find-chroot-py | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee -a $output
+
+echo -e "\nLook for apps not changing groups correctly" | tee -a $output
+echo      "===========================================" | tee -a $output
+./find-nodrop-groups | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee -a $output
+
+
+# Network tests
+echo -e "\nListening processes" | tee -a $output
+echo      "===================" | tee -a $output
+./whats-listening | tee -a $output
+
+echo -e "\nPrivileged listening processes" | tee -a $output
+echo      "==============================" | tee -a $output
+netcap | tee -a $output
+
+
+# SE Linux tests
+echo -e "\nUnlabeled device check" | tee -a $output
+echo      "======================" | tee -a $output
+./selinux-check-devices | tee -a $output
+
+echo -e "\nUnlabeled files" | tee -a $output
+echo      "===============" | tee -a $output
+./unlabeled_files | tee -a $output
+
+echo -e "\nUnconfined processes" | tee -a $output
+echo      "====================" | tee -a $output
+./selinux-ls-unconfined | tee -a $output
+
+#echo -e "\nService start/stop AVC's" | tee -a $output
+#echo      "========================" | tee -a $output
+#./service-avc-test | tee -a $output
+
+echo -e "\nTesting complete\n"

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+DIR="/"
+if [ $# -eq 1 ] ; then
+	if [ -d "$1" ] ; then
+		DIR="$1"
+	else
+		echo "Option passed in was not a directory" 1>&2
+		exit 1
+	fi
+fi
+
+find $DIR -path /root -prune -o -path /proc -prune -o -path /selinux -prune -o -path /sys -prune -o -path /var/named/chroot/proc -prune -type f -o -type d -context system_u:object_r:unlabeled_t -print 2>/dev/null
+
