@@ -1,7 +1,7 @@
 #!/bin/sh
 # rpm-chksec
 #
-# Copyright (c) 2011-2013 Steve Grubb. ALL RIGHTS RESERVED.
+# Copyright (c) 2011-2013,2016 Steve Grubb. ALL RIGHTS RESERVED.
 # sgrubb@redhat.com
 #
 # This software may be freely redistributed under the terms of the GNU
@@ -23,7 +23,7 @@
 #
 # To save to file: ./rpm-chksec | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee output.txt
 
-VERSION="0.5.2"
+VERSION="0.5.3"
 
 usage () {
 	echo "rpm-chksec [--version|--all|<rpmname>...]"
@@ -43,23 +43,18 @@ if [ "$1" = "--version" ] ; then
 	echo "rpm-chksec $VERSION"
 	exit 0
 fi
+rpm -q "$1" >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+	echo "$1 is not installed"
+	exit 1
+fi
 if [ "$1" = "--all" ] ; then
 	MODE="all"
 else
 	MODE="single"
 fi
 
-do_one () {
-if ! rpm -q $1 >/dev/null 2>&1 ; then
-	if [ "$MODE" = "single" ] ; then
-		echo "$1 is not installed"
-		exit 1
-	else
-		echo "not installed"
-		return
-	fi
-fi
-files=`rpm -ql $1`
+echo "Building tables..." >&2
 
 # Look for daemons, need this for later...
 DAEMON=""
@@ -96,6 +91,30 @@ do
         	fi
 	fi
 done
+
+# Look for parsers of untrusted media...need this for later
+UNTRUSTED1=""
+rpms=`rpm -qa --queryformat "%{NAME}\n" | egrep -v '\-devel|^perl|^python'`
+for p in $rpms
+do
+	rpm -qi $p | grep -i 'librar' | egrep -i 'image format files|rendering library|Adobe Flash|multimedia library|image files|codec|BMP|PPM|PCX|GIF|JPEG|PNG|SVG |MPEG4|h263|ac3|asf| avi|mjpeg|archive formats|bzip2|zip archives' >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		UNTRUSTED1="$UNTRUSTED1 `rpm -ql $p | egrep '^\/lib|^\/usr\/lib'`"
+	fi
+done
+UNTRUSTED=`echo "$UNTRUSTED1" | sort`
+
+do_one () {
+if ! rpm -q $1 >/dev/null 2>&1 ; then
+	if [ "$MODE" = "single" ] ; then
+		echo "$1 is not installed"
+		exit 1
+	else
+		echo "not installed"
+		return
+	fi
+fi
+files=`rpm -ql $1`
 
 # Prevent garbled output when doing --all.
 skip_current=0
@@ -168,6 +187,16 @@ do
 			fi
 		fi
 	fi
+	if [  x"$APP" = "x" -a x"$UNTRUSTED" != "x" ] ; then
+		libs=`ldd $f 2> /dev/null | awk 'NF>2 { print $3 }'`
+		for L in $libs
+		do
+			if [[ $UNTRUSTED =~ $L ]] ; then
+				APP="media-app"
+				break
+			fi
+		done
+	fi
 	if [ x"$APP" = "x" ] ; then
 		APP="exec"
 	fi
@@ -175,7 +204,7 @@ do
 	# OK, ready for the output
 	if [ "$MODE" = "single" ] ; then
 		printf "%-56s %-10s  " "$f" $APP
-		if [ "$APP" = "daemon" -o "$APP" = "setuid" -o "$APP" = "setgid" -o "$APP" = "setcap" -o "$APP" = "network-ip" -o "$APP" = "network-local" ] ; then
+		if [ "$APP" = "daemon" -o "$APP" = "setuid" -o "$APP" = "setgid" -o "$APP" = "setcap" -o "$APP" = "network-ip" -o "$APP" = "network-local" -o "$APP" = "untrusted-media" ] ; then
 			if [ "$RELRO" = "full" ] ; then
 				 printf "\033[32m%-7s\033[m  " $RELRO
 			elif [ "$RELRO" = "partial" ] ; then
