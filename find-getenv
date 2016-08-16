@@ -49,7 +49,7 @@ for d in $dirs ; do
 			syms=`find $f \( -perm -004000 -o -perm -002000 \) -type f -print`
 			if [ x"$syms" = "x" ] ; then
 				printf "\033[31m%-44s\033[m" $f
-				rpm -qf --queryformat "%{SOURCERPM}" $f
+				rpm -qf --queryformat "\t%{SOURCERPM}" $f
 				echo
 				FOUND=1
 #			else
