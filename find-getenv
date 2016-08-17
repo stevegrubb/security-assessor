@@ -12,6 +12,9 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 # This program looks for apps that use getenv(2)
+# There is nothing wrong with getenv by itself, how the app does and how it
+# uses it will have to be taken into consideration. setuid apps that use
+# getenv should be inspected carefully.
 #
 # To save to file: ./find-getenv | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee findings.txt
 
