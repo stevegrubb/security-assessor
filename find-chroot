@@ -12,6 +12,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 # This program looks for apps that use chroot(2) without using chdir(2)
+# The output will be "binary    RPM"
 #
 # To save to file: ./find-chroot | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee findings.txt
 
@@ -42,8 +43,10 @@ for d in $dirs ; do
 	files=`/usr/bin/find $d -name "$2" -type f 2>/dev/null`
 	for f in $files
 	do
+		# First we look if the chroot(2) function is being used
 		syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' chroot@.*GLIBC'`
 		if [ x"$syms" != "x" ] ; then
+			# Then we see if chdir(2) is being used
 			syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' chdir@.*GLIBC'`
 			if [ x"$syms" = "x" ] ; then
 				if [ $FOUND = 0 ]  ; then
@@ -60,7 +63,10 @@ for d in $dirs ; do
 					continue
 				fi
 				# One last test to see if chdir is within 3
-				# lines of chroot
+				# lines of chroot. If it's not, we assume the chrdir call
+				# isn't associated with the chroot call. This will probably
+				# generate some false positives, but better safe than
+				# sorry.
 				syms=`objdump -d $f | egrep callq | egrep 'chroot@plt' -A2 | egrep 'chroot|chdir'`
 				if [ x"$syms" = "x" ] ; then
 					syms=`echo $f | egrep -v 'libc-2|libc.so'`
