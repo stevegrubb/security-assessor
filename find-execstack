@@ -40,6 +40,8 @@ for d in $dirs ; do
 	do
 		FOUND_ONE=0
 		stacks=`/usr/bin/eu-readelf -l $f 2>/dev/null | grep STACK`
+		# The below test checks the STACK for execute permissions. It
+		# should show 'RW' if things are OK, 'RWE" is bad.
 		if [ x"$stacks" != "x" ] ; then
 			perms=`echo $stacks | /bin/awk '{ print $7 }'`
 			if [ x"$perms" != x -a "$perms" != "RW" ] ; then
@@ -47,10 +49,15 @@ for d in $dirs ; do
 			fi
 		fi
 		old_stacks=`echo $stacks | /bin/grep -v GNU_STACK`
+		# The below test is looking for a symbol with STACK in it, but
+		# isn't GNU_STACK, this would suggest it's an old binary, before
+		# non executable stacks existed.
 		if [ x"$old_stacks" != "x" ] ; then
 			FOUND_ONE=1
 		fi
 		heaps=`/usr/bin/eu-readelf -l $f 2>/dev/null | grep GNU_HEAP`
+		# Executable heaps used to be a thing, if this symbol is present
+		# we're probably dealing with an old binary and an executable heap.
 		if [ x"$heaps" != "x" ] ; then
 			FOUND_ONE=1
 		fi
