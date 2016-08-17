@@ -11,7 +11,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# This program looks for executable stacks
+# This program looks for executable stacks. There are very few cases where
+# an executable stack should exist, every positive this test hits should be
+# inspected carefully.
 #
 
 if [ -h /bin ] ; then
