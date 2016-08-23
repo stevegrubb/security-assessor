@@ -84,7 +84,7 @@ do
         		echo "Can't find the executable in $f but daemon rules would apply"
 		fi
 	elif [ `echo "$f" | grep '\/lib\/systemd\/'` ] ; then
-		t=`cat "$f" | grep -i '^ExecStart=' | tr '=' ' ' | awk '{ print $2 }'`
+		t=`cat "$f" | grep -i '^ExecStart=' | tr '=' ' ' | awk '{ print $2 }' | sed 's|^-||'`
 		if [ x"$t" != "x" ] ; then
                 	DAEMON="$DAEMON $t"
 	                continue

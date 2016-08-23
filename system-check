@@ -151,7 +151,7 @@ if [ -e /bin/systemctl ] ; then
 	list2=`systemctl list-unit-files --type=service | grep enable | awk '{ print $1 }'`
 	for f in $list2
 	do
-		cat /usr/lib/systemd/system/$f 2>/dev/null | grep ExecStart | tr '=' ' ' | awk '{ print $2 }' >> list.log
+		cat /usr/lib/systemd/system/$f 2>/dev/null | grep  '^ExecStart=' | tr '=' ' ' | awk '{ print $2 }'  | sed 's|^-||' >> list.log
 	done
 fi
 if [ $FOUND -eq 1 ] ; then
