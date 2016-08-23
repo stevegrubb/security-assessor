@@ -1,4 +1,18 @@
 #!/bin/sh
+
+# Copyright (c) 2012 Steve Grubb. ALL RIGHTS RESERVED.
+# sgrubb@redhat.com
+#
+# This software may be freely redistributed under the terms of the GNU
+# public license.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# This app looks for files that are group writable
+
+
 if [ -h /bin ] ; then
 	dirs="/boot /etc /tmp /usr /var/account /var/cache /var/crash /var/db /var/gdm /var/lib /var/local /var/lock /var/nis /var/run /var/tmp /var/www /var/yp"
 else

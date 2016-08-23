@@ -11,7 +11,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# This program looks for apps that use getenv(2)
+# This program looks for setuid setgid apps that use getenv(2)
 #
 # To save to file: ./find-getenv | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | tee findings.txt
 
@@ -42,12 +42,10 @@ for d in $dirs ; do
 	for f in $files
 	do
 		syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' getenv@.*GLIBC'`
-		if [ x"$syms" = "x" ] ; then
-			if [ $FOUND = 0 ]  ; then
-				printf "%-44s%s\n" "FILE" "PACKAGE"
-			fi
+		if [ x"$syms" != "x" ] ; then
+			# Only complain about setuid or setgid things
 			syms=`find $f \( -perm -004000 -o -perm -002000 \) -type f -print`
-			if [ x"$syms" = "x" ] ; then
+			if [ x"$syms" != "x" ] ; then
 				printf "\033[31m%-44s\033[m" $f
 				rpm -qf --queryformat "\t%{SOURCERPM}" $f
 				echo
