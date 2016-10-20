@@ -5,16 +5,19 @@
 # protected_hardlinks = 0 no, *1 yes
 # protected_symlinks = 0 no, *1 yes
 # suid_dumpable = *0 no, 1 yes
-# dmesg_restrict = 0 everyone, *1 restricted
-# perf_event_paranoid = *2 no events, 1 perf data, 0 everything
+# perf_event_paranoid = -1, 0, 1, *2
 # randomize_va_space = *2 all, 1 mmap, 0 none
 # ptrace_scope = 0 none, 1 trace child, *2 CAP_SYS_PTRACE, 3 none
+# kexec_load_disabled = 0 no, *1 yes
+# kptr_restrict = 0 no, *1 yes
+# dmesg_restrict = 0 everyone, *1 restricted
+# perf_event_paranoid = *2 no events, 1 perf data, 0 everything
 # legacy_va_layout = 1 use legacy layout, *0 new layout
 
-critical="protected_hardlinks|protected_symlinks|suid_dumpable|dmesg_restrict|perf_event_paranoid|randomize_va_space|legacy_va_layout|kernel.yama"
+critical="protected_hardlinks|protected_symlinks|suid_dumpable|perf_event_paranoid|randomize_va_space|ptrace_scope|kexec_load_disabled|kptr_restrict|dmesg_restrict"
 other="usermodehelper.bset|usermodehelper.inheritable|kernel.*shield|cad_pid|mmap_rnd_"
 
-if [ $1 = "--critical" ] ; then
+if [ "$1" = "--critical" ] ; then
 	/usr/sbin/sysctl -a 2>/dev/null | egrep "$critical"
 else
 	/usr/sbin/sysctl -a 2>/dev/null | egrep "$critical|$other"
