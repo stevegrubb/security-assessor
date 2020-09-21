@@ -15,7 +15,7 @@ fi
 FOUND=0
 
 check() {
-	xx=`readelf -s $1 | awk 'NF>7 { print $8}' 2>/dev/null`
+	xx=`readelf -sW $1 | awk 'NF>7 { print $8}' 2>/dev/null`
 	if [ x"$xx" != "x" ] ; then
 		func=""
  		echo "$xx" | grep -w 'bcopy@.*GLIBC.*' >/dev/null

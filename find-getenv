@@ -41,7 +41,7 @@ for d in $dirs ; do
 	files=`/usr/bin/find $d -name "$2" -type f 2>/dev/null`
 	for f in $files
 	do
-		syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' getenv@.*GLIBC'`
+		syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' getenv@.*GLIBC'`
 		if [ x"$syms" != "x" ] ; then
 			# Only complain about setuid or setgid things
 			syms=`find $f \( -perm -004000 -o -perm -002000 \) -type f -print`

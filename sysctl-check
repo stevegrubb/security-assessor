@@ -5,7 +5,7 @@
 # protected_hardlinks = 0 no, *1 yes
 # protected_symlinks = 0 no, *1 yes
 # suid_dumpable = *0 no, 1 yes
-# perf_event_paranoid = -1, 0, 1, *2
+# perf_event_paranoid = *2 no events, 1 perf data, 0 everything
 # randomize_va_space = *2 all, 1 mmap, 0 none
 # ptrace_scope = 0 none, 1 trace child, *2 CAP_SYS_PTRACE, 3 none
 # kexec_load_disabled = 0 no, *1 yes

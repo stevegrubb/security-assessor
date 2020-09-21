@@ -176,8 +176,8 @@ do
 		elif [ -x /usr/bin/filecap ] && [ `filecap "$f" 2> /dev/null | wc -w` -gt 0 ] ; then
 			APP="setcap"
 		else
-			syms1=`/usr/bin/readelf -s "$f" 2>/dev/null | egrep ' connect@.*GLIBC| listen@.*GLIBC| accept@.*GLIBC|accept4@.*GLIBC'`
-			syms2=`/usr/bin/readelf -s "$f" 2>/dev/null | egrep ' getaddrinfo@.*GLIBC| getnameinfo@.*GLIBC| getservent@.*GLIBC| getservbyname@.*GLIBC| getservbyport@.*GLIBC|gethostbyname@.*GLIBC| gethostbyname2@.*GLIBC|  gethostbyaddr@.*GLIBC|  gethostbyaddr2@.*GLIBC'`
+			syms1=`/usr/bin/readelf -sW "$f" 2>/dev/null | egrep ' connect@.*GLIBC| listen@.*GLIBC| accept@.*GLIBC|accept4@.*GLIBC'`
+			syms2=`/usr/bin/readelf -sW "$f" 2>/dev/null | egrep ' getaddrinfo@.*GLIBC| getnameinfo@.*GLIBC| getservent@.*GLIBC| getservbyname@.*GLIBC| getservbyport@.*GLIBC|gethostbyname@.*GLIBC| gethostbyname2@.*GLIBC|  gethostbyaddr@.*GLIBC|  gethostbyaddr2@.*GLIBC'`
 			if [ x"$syms1" != "x" ] ; then
 				if [ x"$syms2" != "x" ] ; then
 					APP="network-ip"

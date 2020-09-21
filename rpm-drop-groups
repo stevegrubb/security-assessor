@@ -67,12 +67,12 @@ do
 	fi
 
 	CORRECT="n/a"
-	syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' setgid@.*GLIBC| setegid@.*GLIBC| setresgid@.*GLIBC'`
+	syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' setgid@.*GLIBC| setegid@.*GLIBC| setresgid@.*GLIBC'`
 	if [ x"$syms" != "x" ] ; then
 		CORRECT="yes"
-		syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' setuid@.*GLIBC| seteuid@.*GLIBC| setresuid@.*GLIBC'`
+		syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' setuid@.*GLIBC| seteuid@.*GLIBC| setresuid@.*GLIBC'`
 		if [ x"$syms" != "x" ] ; then
-			syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' setgroups@.*GLIBC| initgroups@.*GLIBC'`
+			syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' setgroups@.*GLIBC| initgroups@.*GLIBC'`
 			if [ x"$syms" = "x" ] ; then
 				syms=`find $f \( -perm -004000 -o -perm -002000 \) -type f -print`
 				if [ x"$syms" = "x" ] ; then

@@ -56,9 +56,9 @@ for d in $dirs ; do
 	for f in $files
 	do
 		if [ "$MODE" = "uses" ] ; then
-			syms=`/usr/bin/readelf -s $f 2>/dev/null | awk '$4 == "FUNC" && $7 == "UND" { print $8 }' | grep "$FUNCTION"`
+			syms=`/usr/bin/readelf -sW $f 2>/dev/null | awk '$4 == "FUNC" && $7 == "UND" { print $8 }' | grep "$FUNCTION"`
 		else
-			syms=`/usr/bin/readelf -s $f 2>/dev/null | awk '$4 == "FUNC" && $7 != "UND" { print $8 }' | grep "$FUNCTION"`
+			syms=`/usr/bin/readelf -sW $f 2>/dev/null | awk '$4 == "FUNC" && $7 != "UND" { print $8 }' | grep "$FUNCTION"`
 		fi
 
 		if [ x"$syms" != "x" ] ; then

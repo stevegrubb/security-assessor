@@ -76,7 +76,7 @@ do
 		continue
 	fi
 	STACK="no"
-	if readelf -s "$f" 2>/dev/null | grep -q '__stack_chk_fail'; then
+	if readelf -sW "$f" 2>/dev/null | grep -q '__stack_chk_fail'; then
 		STACK="yes"
 	fi
 	APP=""

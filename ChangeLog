@@ -1,5 +1,6 @@
 0.3
 - Add sysctl's test
+- Change all readelf -s to add the wide flag to prevent truncation
 
 0.2
 - Fix daemon tests to use systemd info if it exists

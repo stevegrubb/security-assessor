@@ -154,14 +154,14 @@ filecheck() {
   fi
 
   # check for stack canary support
-  if readelf -s $1 2>/dev/null | grep -q '__stack_chk_fail'; then
+  if readelf -sW $1 2>/dev/null | grep -q '__stack_chk_fail'; then
     echo -n -e '\033[32mCanary found   \033[m   '
   else
     echo -n -e '\033[31mNo canary found\033[m   '
   fi
 
   # check for FORTIFY_SOURCE
-  if readelf -s $1 2>/dev/null | grep -q '__.*_chk@'; then
+  if readelf -sW $1 2>/dev/null | grep -q '__.*_chk@'; then
     echo -n -e '\033[32mFortify found   \033[m   '
   else
     echo -n -e '\033[31mNo Fortify found\033[m   '
@@ -207,8 +207,8 @@ proccheck() {
   fi
 
   # check for stack canary support
-  if readelf -s $1/exe 2>/dev/null | grep -q 'Symbol table'; then
-    if readelf -s $1/exe 2>/dev/null | grep -q '__stack_chk_fail'; then
+  if readelf -sW $1/exe 2>/dev/null | grep -q 'Symbol table'; then
+    if readelf -sW $1/exe 2>/dev/null | grep -q '__stack_chk_fail'; then
       echo -n -e '\033[32mCanary found         \033[m  '
     else
       echo -n -e '\033[31mNo canary found      \033[m  '

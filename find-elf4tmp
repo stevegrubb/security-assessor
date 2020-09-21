@@ -58,7 +58,7 @@ do
 
 			# If safe tempfile operations are used, we assume things will
 			# be OK (this will certainly produce false negatives)
-			syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' mkstemp@.*GLIBC| tempnam@.*GLIBC| tmpfile@.*GLIBC'`
+			syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' mkstemp@.*GLIBC| tempnam@.*GLIBC| tmpfile@.*GLIBC'`
 			if [ x"$syms" != "x" ] ; then
 				continue
 			fi

@@ -44,10 +44,10 @@ for d in $dirs ; do
 	for f in $files
 	do
 		# First we look if the chroot(2) function is being used
-		syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' chroot@.*GLIBC'`
+		syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' chroot@.*GLIBC'`
 		if [ x"$syms" != "x" ] ; then
 			# Then we see if chdir(2) is being used
-			syms=`/usr/bin/readelf -s $f 2>/dev/null | egrep ' chdir@.*GLIBC'`
+			syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' chdir@.*GLIBC'`
 			if [ x"$syms" = "x" ] ; then
 				if [ $FOUND = 0 ]  ; then
 					printf "%-44s%s\n" "FILE" " PACKAGE"
