@@ -830,9 +830,9 @@ if [ "$1" = "--fortify-file" ] ; then
     printf "\033[31mError: libc not found.\033[m\n\n"
     exit 1
   fi
-#  FS_chk_func_libc=( $( readelf -s $FS_libc | grep _chk@.*GLIBC | tr '@' ' ' | awk '{ print $8 }') | cut -c 3- | sed -e 's/_chk.*//' )
-  FS_chk_func_libc=( $(readelf -s $FS_libc | grep _chk@@ | awk '{ print $8 }' | cut -c 3- | sed -e 's/_chk@.*//') )
-  FS_functions=( $(readelf -s $2 | awk '{ print $8 }' | sed 's/_*//' | sed -e 's/@.*//') )
+#  FS_chk_func_libc=( $( readelf -sW $FS_libc | grep _chk@.*GLIBC | tr '@' ' ' | awk '{ print $8 }') | cut -c 3- | sed -e 's/_chk.*//' )
+  FS_chk_func_libc=( $(readelf -sW $FS_libc | grep _chk@@ | awk '{ print $8 }' | cut -c 3- | sed -e 's/_chk@.*//') )
+  FS_functions=( $(readelf -sW $2 | awk '{ print $8 }' | sed 's/_*//' | sed -e 's/@.*//') )
 
   FS_libc_check
   FS_binary_check
@@ -878,8 +878,8 @@ if [ "$1" = "--fortify-proc" ] ; then
       exit 1
     fi
     printf "* Process name (PID)                         : %s (%d)\n" `head -1 $N/status | cut -b 7-` $N
-    FS_chk_func_libc=( $(readelf -s $FS_libc | grep _chk@@ | awk '{ print $8 }' | cut -c 3- | sed -e 's/_chk@.*//') )
-    FS_functions=( $(readelf -s $2/exe | awk '{ print $8 }' | sed 's/_*//' | sed -e 's/@.*//') )
+    FS_chk_func_libc=( $(readelf -sW $FS_libc | grep _chk@@ | awk '{ print $8 }' | cut -c 3- | sed -e 's/_chk@.*//') )
+    FS_functions=( $(readelf -sW $2/exe | awk '{ print $8 }' | sed 's/_*//' | sed -e 's/@.*//') )
 
     FS_libc_check
     FS_binary_check
