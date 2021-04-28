@@ -261,12 +261,9 @@ done
 if [ "$MODE" = "single" ] ; then
 	printf "%-56s %-10s  %-7s  %-4s" "FILE" "TYPE" "RELRO" "PIE"
 	echo
-	for i; do
-		f=$(basename $1)
-		# Strip the .rpm extension, if present.
-		do_one ${f%%.rpm}
-		shift
-	done
+	f=$(basename $1)
+	# Strip the .rpm extension, if present.
+	do_one ${f%%.rpm}
 	exit 0
 fi
 

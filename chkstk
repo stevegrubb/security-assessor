@@ -79,7 +79,6 @@ do
 	if readelf -sW "$f" 2>/dev/null | grep -q '__stack_chk_fail'; then
 		STACK="yes"
 	fi
-	APP=""
 
 	# OK, ready for the output
 	if [ "$MODE" = "single" ] ; then
@@ -96,12 +95,9 @@ done
 if [ "$MODE" = "single" ] ; then
 	printf "%-56s %-10s" "FILE" "STACK"
 	echo
-	for i; do
-		f=$(basename $1)
-		# Strip the .rpm extension, if present.
-		do_one ${f%%.rpm}
-		shift
-	done
+	f=$(basename $1)
+	# Strip the .rpm extension, if present.
+	do_one ${f%%.rpm}
 	exit 0
 fi
 
@@ -112,7 +108,6 @@ echo
 for p in $packages
 do
 	STACK_SUM="yes"
-	APP_SUM=""
 	printf "%-50s  " $p
 	do_one $p
 	if [[ $skip_current -eq 1 ]] ; then

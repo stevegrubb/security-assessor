@@ -698,7 +698,7 @@ if [ "$1" = "--proc-all" ] ; then
     printf "\n\033[33mNote: If you are running 'checksec.sh' as an unprivileged user, you\n"
     printf "      will not see all processes. Please run the script as root.\033[m\n\n"
   else 
-    if !(root_privs) ; then
+    if ! (root_privs) ; then
       printf "\n\033[33mNote: You are running 'checksec.sh' as an unprivileged user.\n" 
       printf "      Too see all processes, please run the script as root.\033[m\n\n"
     fi
@@ -714,7 +714,7 @@ if [ "$1" = "--proc" ] ; then
     printf "\033[31mError: Please provide a valid process name.\033[m\n\n"
     exit 1
   fi
-  if !(isString "$2") ; then
+  if ! (isString "$2") ; then
      printf "\033[31mError: Please provide a valid process name.\033[m\n\n"
      exit 1
   fi
@@ -730,7 +730,7 @@ if [ "$1" = "--proc" ] ; then
       printf "%7d " $N
       # read permissions?
       if [ ! -r $N/exe ] ; then
-        if !(root_privs) ; then
+        if ! (root_privs) ; then
           printf "\033[31mNo read permissions for '/proc/$N/exe' (run as root).\033[m\n\n"
           exit 1
         fi
@@ -755,7 +755,7 @@ if [ "$1" = "--proc-libs" ] ; then
     printf "\033[31mError: Please provide a valid process ID.\033[m\n\n"
     exit 1
   fi
-  if !(isNumeric "$2") ; then
+  if ! (isNumeric "$2") ; then
      printf "\033[31mError: Please provide a valid process ID.\033[m\n\n"
      exit 1
   fi
@@ -772,7 +772,7 @@ if [ "$1" = "--proc-libs" ] ; then
     printf "%7d " $N
     # read permissions?
     if [ ! -r $N/exe ] ; then
-      if !(root_privs) ; then
+      if ! (root_privs) ; then
         printf "\033[31mNo read permissions for '/proc/$N/exe' (run as root).\033[m\n\n"
         exit 1
       fi
@@ -850,7 +850,7 @@ if [ "$1" = "--fortify-proc" ] ; then
     printf "\033[31mError: Please provide a valid process ID.\033[m\n\n"
     exit 1
   fi
-  if !(isNumeric "$2") ; then
+  if ! (isNumeric "$2") ; then
      printf "\033[31mError: Please provide a valid process ID.\033[m\n\n"
      exit 1
   fi
@@ -859,7 +859,7 @@ if [ "$1" = "--fortify-proc" ] ; then
   if [ -d $N ] ; then
     # read permissions?
     if [ ! -r $N/exe ] ; then
-      if !(root_privs) ; then
+      if ! (root_privs) ; then
         printf "\033[31mNo read permissions for '/proc/$N/exe' (run as root).\033[m\n\n"
         exit 1
       fi
