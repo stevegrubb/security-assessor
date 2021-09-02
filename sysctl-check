@@ -1,9 +1,11 @@
 #!/bin/sh
 
-# Critical sysctls:
-# =================
+# Critical sysctls (as of 5.13):
+# ==============================
 # protected_hardlinks = 0 no, *1 yes
 # protected_symlinks = 0 no, *1 yes
+# protected_fifos = 2
+# protected_regular = 2
 # suid_dumpable = *0 no, 1 yes
 # perf_event_paranoid = *2 no events, 1 perf data, 0 everything
 # randomize_va_space = *2 all, 1 mmap, 0 none
@@ -16,8 +18,9 @@
 # max_user_namespaces = 
 # unprivileged_bpf_disabled = 1
 # bpf_jit_harden = *2
+# unprivileged_userfaultfd = 0
 
-critical="protected_hardlinks|protected_symlinks|suid_dumpable|perf_event_paranoid|randomize_va_space|ptrace_scope|kexec_load_disabled|kptr_restrict|dmesg_restrict|max_user_namespaces|unprivileged_bpf_disabled|bpf_jit_harden"
+critical="protected_hardlinks|protected_symlinks|protected_fifos|protected_regular|suid_dumpable|perf_event_paranoid|randomize_va_space|ptrace_scope|kexec_load_disabled|kptr_restrict|dmesg_restrict|max_user_namespaces|unprivileged_bpf_disabled|bpf_jit_harden|unprivileged_userfaultfd"
 other="usermodehelper.bset|usermodehelper.inheritable|kernel.*shield|cad_pid|mmap_rnd_"
 
 if [ "$1" = "--critical" ] ; then
