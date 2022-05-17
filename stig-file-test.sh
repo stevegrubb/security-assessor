@@ -149,6 +149,8 @@ if [ -d /etc/init ] ; then
 find /etc/init -type f -perm /0022 -printf "GEN001580: %p is %m should be 0755 or less\n" 2>/dev/null
 elif [ -d /etc/systemd ] ; then
 find /etc/systemd -type f -perm /0022 -printf "GEN001580: %p is %m should be 0755 or less\n" 2>/dev/null
+# Actual service files should not be executable
+find /etc/systemd/system -type f -perm /0133 -printf "GEN001580: %p is %m should be 0644 or less\n" 2>/dev/null
 fi
 
 #27) 1560 all files in home dirs must be 0750 or less
