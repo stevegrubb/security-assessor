@@ -59,6 +59,7 @@ find /usr/local/bin -type f -perm /0022 -printf "GEN001200: %p is %m should be 0
 find /usr/local/sbin -type f -perm /0022 -printf "GEN001200: %p is %m should be 0755 or less\n" 2>/dev/null
 find /usr/lib64/qt-3.3/bin -type f -perm /0022 -printf "GEN001200: %p is %m should be 0755 or less\n" 2>/dev/null
 find /usr/java/j2re1.4.2_06/bin -type f -perm /0022 -printf "GEN001200: %p is %m should be 0755 or less\n" 2>/dev/null
+find /usr/libexec -type f -perm /0022 -printf "GEN001200: %p is %m should be 0755 or less\n" 2>/dev/null
 
 #08) 1220 system command dirs must be own by a system account
 if [ ! -h /bin ] ; then
@@ -71,6 +72,7 @@ find /usr/local/bin -type d \( ! -user root \) -printf "GEN001220: %p is user %u
 find /usr/local/sbin -type d \( ! -user root \) -printf "GEN001220: %p is user %u should be root\n" 2>/dev/null
 find /usr/lib64/qt-3.3/bin -type d \( ! -user root \) -printf "GEN001220: %p is user %u should be root\n" 2>/dev/null
 find /usr/java/j2re1.4.2_06/bin -type d \( ! -user root \) -printf "GEN001220: %p is user %u should be root\n" 2>/dev/null
+find /usr/libexec -type d \( ! -user root \) -printf "GEN001220: %p is user %u should be root\n" 2>/dev/null
 
 #09) 1240 system command dirs must be owned by a system group
 if [ ! -h /bin ] ; then
@@ -83,6 +85,7 @@ find /usr/local/bin -type d \( ! -group root \) -printf "GEN001220: %p is group 
 find /usr/local/sbin -type d \( ! -group root \) -printf "GEN001220: %p is group %g should be root\n" 2>/dev/null
 find /usr/lib64/qt-3.3/bin -type d \( ! -group root \) -printf "GEN001220: %p is user %u should be root\n" 2>/dev/null
 find /usr/java/j2re1.4.2_06/bin -type d \( ! -group root \) -printf "GEN001220: %p is user %u should be root\n" 2>/dev/null
+find /usr/libexec -type d \( ! -group root \) -printf "GEN001220: %p is group %g should be root\n" 2>/dev/null
 
 #10) 1400 shadow must be owned by root
 find /etc -maxdepth 1 -type f \( ! -user root \) -name shadow -printf "GEN001400: %p is user %u should be root\n" 2>/dev/null
