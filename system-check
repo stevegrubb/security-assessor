@@ -7,15 +7,13 @@ if [ x$check = "x" ] ; then
 	echo "You need to install the binutils package"
 	exit 1
 fi
-check="`which netcap 2>/dev/null`"
-if [ x$check = "x" ] ; then
-	echo "You need to install the libcap-ng-utils package"
-	exit 1
+net_check="`which netcap 2>/dev/null`"
+if [ x$net_check = "x" ] ; then
+	echo "The scan is more complete if the libcap-ng-utils package were installed"
 fi
 check="`which eu-strings 2>/dev/null`"
 if [ x$check = "x" ] ; then
-	echo "You need to install the elfutils package"
-	exit 1
+	echo "The scan is more complete if the elfutils package were installed"
 fi
 
 echo "Starting system-check $VERSION"
@@ -180,7 +178,11 @@ echo      "===================" | tee -a $output
 
 echo -e "\nPrivileged listening processes" | tee -a $output
 echo      "==============================" | tee -a $output
-netcap | tee -a $output
+if [ x$net_check = "x" ] ; then
+	echo "skipped - netcap not found"
+else
+	netcap | tee -a $output
+fi
 
 
 # SE Linux tests
