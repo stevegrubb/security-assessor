@@ -102,7 +102,7 @@ if [ "$MODE" = "single" ] ; then
 fi
 
 # Skip the kernel as its special
-packages=`rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | egrep -v 'kernel.|debuginfo.|.noarch|gpg-pubkey' | sort`
+packages=`rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | grep -Ev 'kernel.|debuginfo.|.noarch|gpg-pubkey' | sort`
 printf "%-50s  %-5s" "PACKAGE" "STACK"
 echo
 for p in $packages

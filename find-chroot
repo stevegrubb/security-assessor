@@ -44,10 +44,10 @@ for d in $dirs ; do
 	for f in $files
 	do
 		# First we look if the chroot(2) function is being used
-		syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' chroot@.*GLIBC'`
+		syms=`/usr/bin/readelf -sW $f 2>/dev/null | grep ' chroot@.*GLIBC'`
 		if [ x"$syms" != "x" ] ; then
 			# Then we see if chdir(2) is being used
-			syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' chdir@.*GLIBC'`
+			syms=`/usr/bin/readelf -sW $f 2>/dev/null | grep ' chdir@.*GLIBC'`
 			if [ x"$syms" = "x" ] ; then
 				if [ $FOUND = 0 ]  ; then
 					printf "%-44s%s\n" "FILE" " PACKAGE"
@@ -67,9 +67,9 @@ for d in $dirs ; do
 				# isn't associated with the chroot call. This will probably
 				# generate some false positives, but better safe than
 				# sorry.
-				syms=`objdump -d $f | egrep callq | egrep 'chroot@plt' -A2 | egrep 'chroot|chdir'`
+				syms=`objdump -d $f | grep callq | grep 'chroot@plt' -A2 | grep -E 'chroot|chdir'`
 				if [ x"$syms" = "x" ] ; then
-					syms=`echo $f | egrep -v 'libc-2|libc.so'`
+					syms=`echo $f | grep -Ev 'libc-2|libc.so'`
 					if [ x"$syms" != "x" ] ; then
 						if [ $FOUND = 0 ]  ; then
 							printf "%-44s%s\n" "FILE" "PACKAGE"

@@ -5,7 +5,7 @@ types="ELF|python|perl|tcl"
 display () {
 	while [ $# -ge 1 ]
 	do
-		type=`file $1 | egrep -wo $types 2>/dev/null`
+		type=`file $1 | grep -Ewo $types 2>/dev/null`
 		package=`rpm -qf --queryformat "%{NAME}-%{VERSION}" $1 2>/dev/null`
 		if [ $? -eq 1 ] ; then
 			package="Not Owned"

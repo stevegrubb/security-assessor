@@ -42,14 +42,14 @@ for d in $dirs ; do
 	for f in $files
 	do
 		if [ "$1" = "2" ] ; then
-			testf=`/usr/bin/file $f | egrep 'bin\/perl'`
+			testf=`/usr/bin/file $f | grep 'bin/perl'`
 			if [ x"$testf" = "x" ] ; then
 				continue
 			fi
 		fi
-		syms=`egrep ' chroot' $f`
+		syms=`grep ' chroot' $f`
 		if [ x"$syms" != "x" ] ; then
-			syms=`egrep ' chdir' $f`
+			syms=`grep ' chdir' $f`
 			if [ x"$syms" = "x" ] ; then
 				if [ $FOUND = 0 ]  ; then
 					printf "%-44s%s\n" "FILE" " PACKAGE"
@@ -63,7 +63,7 @@ for d in $dirs ; do
 			else
 				# One last test to see if chdir is within 4
 				# lines of chroot
-				syms=`cat $f | egrep ' chroot' -A3 | egrep ' chdir'`
+				syms=`cat $f | grep ' chroot' -A3 | grep ' chdir'`
 				if [ x"$syms" = "x" ] ; then
 					if [ $FOUND = 0 ]  ; then
 						printf "%-44s%s\n" "FILE" " PACKAGE"

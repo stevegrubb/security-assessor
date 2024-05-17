@@ -34,7 +34,6 @@ else
 	TEE="/usr/bin/tee -a $output"
 	CONTAINER="0"
 fi
-alias egrep="grep -E"
 
 # Start by checking some kernel sysctls
 echo -e "Important kernel sysctl settings" | $TEE

@@ -42,14 +42,14 @@ for d in $dirs ; do
 	for f in $files
 	do
 		if [ "$1" = "2" ] ; then
-			testf=`/usr/bin/file $f | egrep 'ython'`
+			testf=`/usr/bin/file $f | grep 'ython'`
 			if [ x"$testf" = "x" ] ; then
 				continue
 			fi
 		fi
-		syms=`egrep ' os.chroot' $f`
+		syms=`grep ' os.chroot' $f`
 		if [ x"$syms" != "x" ] ; then
-			syms=`egrep ' os.chdir' $f`
+			syms=`grep ' os.chdir' $f`
 			if [ x"$syms" = "x" ] ; then
 				if [ $FOUND = 0 ]  ; then
 					printf "%-44s%s\n" "FILE" " PACKAGE"
@@ -63,7 +63,7 @@ for d in $dirs ; do
 			else
 				# One last test to see if chdir is within 4
 				# lines of chroot
-				syms=`cat $f | egrep ' os.chroot' -A3 | egrep ' os.chdir'`
+				syms=`cat $f | grep ' os.chroot' -A3 | grep ' os.chdir'`
 				if [ x"$syms" = "x" ] ; then
 					if [ $FOUND = 0 ]  ; then
 						printf "%-44s%s\n" "FILE" " PACKAGE"

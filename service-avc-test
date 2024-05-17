@@ -17,7 +17,7 @@
 
 # List of services that we should skip for various reasons
 serv_skip_list="auditd|firstboot|functions|halt|killall|single|ypbind"
-files=`ls /etc/rc.d/init.d/ | egrep -v $serv_skip_list`
+files=`ls /etc/rc.d/init.d/ | grep -Ev $serv_skip_list`
 if [ -e /bin/systemctl ] ; then
 	files="$files `systemctl list-unit-files --type=service | grep enable | awk '{ print $1 }' | sed '/\.service/s///'`"
 fi

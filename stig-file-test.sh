@@ -27,8 +27,8 @@ find /etc/sysconfig/network-scripts -type f -perm /0022 -printf "GEN001180: %p i
 find /etc/sysconfig/networking -type f -perm /0022 -printf "GEN001180: %p is %m should be 0755 or less\n" 2>/dev/null
 
 #03) 1260 syslog logs should be 0640 or less
-#find /var/log -type f -perm /0137 -printf "GEN001260: %p is %m should be 0640 or less\n" 2>/dev/null | egrep -v 'wtmp|lastlog'
-find /var/log -maxdepth 2 -type f -perm /0137 -printf "GEN001260: %p is %m should be 0640 or less\n" 2>/dev/null | egrep -v 'wtmp|lastlog'
+#find /var/log -type f -perm /0137 -printf "GEN001260: %p is %m should be 0640 or less\n" 2>/dev/null | grep -Ev 'wtmp|lastlog'
+find /var/log -maxdepth 2 -type f -perm /0137 -printf "GEN001260: %p is %m should be 0640 or less\n" 2>/dev/null | grep -Ev 'wtmp|lastlog'
 #files=`cat  /etc/rsyslog.conf | grep -v ^# | grep '/var/log/' | tr '-' ' ' | awk '{ print $2 }'`
 #for f in $files ; do
 #	find / -wholename "$f*" -type f -perm /0137 -printf "GEN001260: %p is %m should be 0640 or less\n" 2>/dev/null

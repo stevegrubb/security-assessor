@@ -17,7 +17,7 @@
 
 # List of services that we should skip for various reasons
 serv_skip_list="auditd|firstboot|functions|halt|killall|single|ypbind|kdump|amtu|reboot"
-files=`ls /etc/rc.d/init.d/ | egrep -v $serv_skip_list`
+files=`ls /etc/rc.d/init.d/ | grep -Ev $serv_skip_list`
 net="$SSH_TTY"
 echo $files
 sleep 5

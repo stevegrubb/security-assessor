@@ -51,14 +51,14 @@ do
 		if [ x"$testf" != "x" ] ; then
 			# Remove strings that look like they're means to be random
 			# ie /tmp/fileXXXXXX
-			test_res=`/usr/bin/eu-strings $f 2>/dev/null | /bin/grep '/tmp/' | /bin/egrep -v 'XX|/tmp/$|[ .,:]/tmp/|%'`
+			test_res=`/usr/bin/eu-strings $f 2>/dev/null | /bin/grep '/tmp/' | /bin/grep -vE 'XX|/tmp/$|[ .,:]/tmp/|%'`
 			if [ x"$test_res" = "x" ] ; then
 				continue
 			fi
 
 			# If safe tempfile operations are used, we assume things will
 			# be OK (this will certainly produce false negatives)
-			syms=`/usr/bin/readelf -sW $f 2>/dev/null | egrep ' mkstemp@.*GLIBC| tempnam@.*GLIBC| tmpfile@.*GLIBC'`
+			syms=`/usr/bin/readelf -sW $f 2>/dev/null | grep -E ' mkstemp@.*GLIBC| tempnam@.*GLIBC| tmpfile@.*GLIBC'`
 			if [ x"$syms" != "x" ] ; then
 				continue
 			fi

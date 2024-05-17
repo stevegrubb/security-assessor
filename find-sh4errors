@@ -51,7 +51,7 @@ FOUND=0
 while read f
 do
 	# Get just the shell scripts
-	testf=`echo $f | /usr/bin/file -n -f - | egrep 'ourne|POSIX shell'`
+	testf=`echo $f | /usr/bin/file -n -f - | grep -E 'ourne|POSIX shell'`
 	if [ x"$testf" != x ] ; then
 		echo $f >> $tempfile2
 		FOUND=1

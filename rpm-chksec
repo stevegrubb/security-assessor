@@ -94,12 +94,12 @@ done
 
 # Look for parsers of untrusted media...need this for later
 UNTRUSTED1=""
-rpms=`rpm -qa --queryformat "%{NAME}\n" | egrep -v '\-devel|^perl|^python'`
+rpms=`rpm -qa --queryformat "%{NAME}\n" | grep -Ev '\-devel|^perl|^python'`
 for p in $rpms
 do
-	rpm -qi $p | grep -i 'librar' | egrep -i 'image format files|rendering library|Adobe Flash|multimedia library|image files|codec|BMP|PPM|PCX|GIF|JPEG|PNG|SVG |MPEG4|h263|ac3|asf| avi|mjpeg|archive formats|bzip2|zip archives' >/dev/null 2>&1
+	rpm -qi $p | grep -i 'librar' | grep -Ei 'image format files|rendering library|Adobe Flash|multimedia library|image files|codec|BMP|PPM|PCX|GIF|JPEG|PNG|SVG |MPEG4|h263|ac3|asf| avi|mjpeg|archive formats|bzip2|zip archives' >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
-		UNTRUSTED1="$UNTRUSTED1 `rpm -ql $p | egrep '^\/lib|^\/usr\/lib'`"
+		UNTRUSTED1="$UNTRUSTED1 `rpm -ql $p | grep -E '^\/lib|^\/usr\/lib'`"
 	fi
 done
 UNTRUSTED=`echo "$UNTRUSTED1" | sort`
@@ -176,8 +176,8 @@ do
 		elif [ -x /usr/bin/filecap ] && [ `filecap "$f" 2> /dev/null | wc -w` -gt 0 ] ; then
 			APP="setcap"
 		else
-			syms1=`/usr/bin/readelf -sW "$f" 2>/dev/null | egrep ' connect@.*GLIBC| listen@.*GLIBC| accept@.*GLIBC|accept4@.*GLIBC'`
-			syms2=`/usr/bin/readelf -sW "$f" 2>/dev/null | egrep ' getaddrinfo@.*GLIBC| getnameinfo@.*GLIBC| getservent@.*GLIBC| getservbyname@.*GLIBC| getservbyport@.*GLIBC|gethostbyname@.*GLIBC| gethostbyname2@.*GLIBC|  gethostbyaddr@.*GLIBC|  gethostbyaddr2@.*GLIBC'`
+			syms1=`/usr/bin/readelf -sW "$f" 2>/dev/null | grep -E ' connect@.*GLIBC| listen@.*GLIBC| accept@.*GLIBC|accept4@.*GLIBC'`
+			syms2=`/usr/bin/readelf -sW "$f" 2>/dev/null | grep -E ' getaddrinfo@.*GLIBC| getnameinfo@.*GLIBC| getservent@.*GLIBC| getservbyname@.*GLIBC| getservbyport@.*GLIBC|gethostbyname@.*GLIBC| gethostbyname2@.*GLIBC|  gethostbyaddr@.*GLIBC|  gethostbyaddr2@.*GLIBC'`
 			if [ x"$syms1" != "x" ] ; then
 				if [ x"$syms2" != "x" ] ; then
 					APP="network-ip"
@@ -268,7 +268,7 @@ if [ "$MODE" = "single" ] ; then
 fi
 
 # Skip the kernel as its special
-packages=`rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | egrep -v 'kernel.|debuginfo.|.noarch|gpg-pubkey' | sort`
+packages=`rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | grep -Ev 'kernel.|debuginfo.|.noarch|gpg-pubkey' | sort`
 printf "%-50s  %-5s  %-4s  %-14s" "PACKAGE" "RELRO" "PIE" "CLASS"
 echo
 for p in $packages

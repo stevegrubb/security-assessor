@@ -24,7 +24,7 @@ critical="protected_hardlinks|protected_symlinks|protected_fifos|protected_regul
 other="usermodehelper.bset|usermodehelper.inheritable|kernel.*shield|cad_pid|mmap_rnd_"
 
 if [ "$1" = "--critical" ] ; then
-	/usr/sbin/sysctl -a 2>/dev/null | egrep "$critical"
+	/usr/sbin/sysctl -a 2>/dev/null | grep -E "$critical"
 else
-	/usr/sbin/sysctl -a 2>/dev/null | egrep "$critical|$other"
+	/usr/sbin/sysctl -a 2>/dev/null | grep -E "$critical|$other"
 fi
