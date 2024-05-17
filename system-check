@@ -26,9 +26,10 @@ if [ -e $output ] ; then
 		exit 0
 	fi
 fi
-touch $output
+touch $output 2> /dev/null
+
 if [ $? -eq 1 ] ; then
-	TEE="true"
+	TEE="/usr/bin/tee -a /dev/null"
 	CONTAINER="1"
 else
 	TEE="/usr/bin/tee -a $output"
