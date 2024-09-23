@@ -23,6 +23,8 @@ if [ ! -h /bin ] ; then
 fi
 files=`find /usr -type f -perm -02000 2>/dev/null`
 display $files
+files=`find /opt -type f -perm -02000 2>/dev/null`
+display $files
 files=`find /var -type f -perm -02000 2>/dev/null`
 display $files
 files=`find /tmp -type f -perm -02000 2>/dev/null`

@@ -2,9 +2,18 @@
 VERSION="0.3"
 output="check.log"
 
+if [ ! -e /bin/which ] ; then
+	echo "You need to install the which package"
+	exit 1
+fi
 check="`which readelf 2>/dev/null`"
 if [ x$check = "x" ] ; then
 	echo "You need to install the binutils package"
+	exit 1
+fi
+check="`which pidof 2>/dev/null`"
+if [ x$check = "x" ] ; then
+        echo "You need to install the procps-ng package"
 	exit 1
 fi
 net_check="`which netcap 2>/dev/null`"
@@ -35,11 +44,6 @@ else
 	TEE="/usr/bin/tee -a $output"
 	UNPRIV="0"
 fi
-
-# Start by checking some kernel sysctls
-echo -e "Important kernel sysctl settings" | $TEE
-echo    "================================" | $TEE
-./sysctl-check | $TEE
 
 # Next file permissions
 echo -e "\nSTIG file permission scan" | $TEE
@@ -80,15 +84,6 @@ echo -e "\nList all setgid" | $TEE
 echo      "===============" | $TEE
 ./find-sgid | $TEE
 
-if [ "$UNPRIV" = "0" ] ; then
-  echo -e "\nList all daemons enabled for runlevel 3" | $TEE
-  echo      "=======================================" | $TEE
-  chkconfig --list 2>/dev/null | grep 3:on | awk '{ print $1 }' | $TEE
-  if [ -e /bin/systemctl ] ; then
-	systemctl list-unit-files --type=service | grep enable | awk '{ print $1 }' | sed '/\.service/s///' | $TEE
-  fi
-fi
-
 echo -e "\nLook for shell scripts with errors" | $TEE
 echo      "==================================" | $TEE
 if [ ! -h /bin ] ; then
@@ -112,62 +107,6 @@ fi
 echo -e "\nLook for ELF binaries with well known tmp files" | $TEE
 echo      "===============================================" | $TEE
 ./find-elf4tmp | $TEE
-
-echo -e "\nLook for ELF binaries using deprecated functions" | $TEE
-echo      "================================================" | $TEE
-./find-legacy | $TEE
-
-if [ "$UNPRIV" = "0" ] ; then
-  echo -e "\nSetuid security check" | $TEE
-  echo      "=====================" | $TEE
-  ./find-suid | awk '{ print $1 }' > list.log
-  ./scan-driver | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | $TEE
-  rm -f list.log
-
-  echo -e "\nSetgid security check" | $TEE
-  echo      "=====================" | $TEE
-  ./find-sgid | awk '{ print $1 }' > list.log
-  ./scan-driver | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | $TEE
-  rm -f list.log
-
-  echo -e "\nDaemon security check" | $TEE
-  echo      "=====================" | $TEE
-  touch list.log
-  list=`chkconfig --list 2>/dev/null | grep 3:on | awk '{ print $1 }'`
-  FOUND=0
-  for f in $list
-  do
-	t=`which $f 2>/dev/null`
-	if [ x"$t" != "x" ] ; then
-        	echo $t >> list.log
-	        continue
-	fi
-	t=`which "$f"d 2>/dev/null`
-	if [ x"$t" != "x" ] ; then
-        	echo $t >> list.log
-	        continue
-	fi
-	t=`cat /etc/rc.d/init.d/$f | grep 'bin' | grep 'exit 5' | grep -v '\$' 2>/dev/null`
-	if [ x"$t" != "x" ] ; then
-        	echo $t >> list.log
-	        continue
-	fi
-	echo "Can't find the executable in /etc/rc.d/init.d/$f" | $TEE
-	FOUND=1
-  done
-  if [ -e /bin/systemctl ] ; then
-	list2=`systemctl list-unit-files --type=service | grep enable | awk '{ print $1 }'`
-	for f in $list2
-	do
-		cat /usr/lib/systemd/system/$f 2>/dev/null | grep  '^ExecStart=' | tr '=' ' ' | awk '{ print $2 }'  | sed 's|^-||' >> list.log
-	done
-  fi
-  if [ $FOUND -eq 1 ] ; then
-	echo
-  fi
-  ./scan-driver | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | $TEE
-  rm -f list.log
-fi
 
 echo -e "\nLook for ELF apps not changing chroot correctly" | $TEE
 echo      "===============================================" | $TEE
@@ -194,23 +133,5 @@ if [ x$net_check = "x" ] ; then
 else
 	netcap | $TEE
 fi
-
-
-# SE Linux tests
-echo -e "\nUnlabeled device check" | $TEE
-echo      "======================" | $TEE
-./selinux-check-devices | $TEE
-
-echo -e "\nUnlabeled files" | $TEE
-echo      "===============" | $TEE
-./unlabeled_files | $TEE
-
-echo -e "\nUnconfined processes" | $TEE
-echo      "====================" | $TEE
-./selinux-ls-unconfined | $TEE
-
-#echo -e "\nService start/stop AVC's" | $TEE
-#echo      "========================" | $TEE
-#./service-avc-test | $TEE
 
 echo -e "\nTesting complete\n"

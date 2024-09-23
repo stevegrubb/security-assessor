@@ -14,9 +14,9 @@
 
 
 if [ -h /bin ] ; then
-	dirs="/boot /etc /tmp /usr /var/account /var/cache /var/crash /var/db /var/gdm /var/lib /var/local /var/lock /var/nis /var/run /var/tmp /var/www /var/yp"
+	dirs="/boot /etc /tmp /usr /var/account /var/cache /var/crash /var/db /var/gdm /var/lib /var/local /var/lock /var/nis /var/run /var/tmp /var/www /var/yp /opt"
 else
-	dirs="/bin /boot /etc /lib /lib64 /sbin /tmp /usr /var/account /var/cache /var/crash /var/db /var/gdm /var/lib /var/local /var/lock /var/nis /var/run /var/tmp /var/www /var/yp"
+	dirs="/bin /boot /etc /lib /lib64 /sbin /tmp /usr /var/account /var/cache /var/crash /var/db /var/gdm /var/lib /var/local /var/lock /var/nis /var/run /var/tmp /var/www /var/yp /opt"
 fi
 for d in $dirs; do
 	echo "Scanning $d ..."

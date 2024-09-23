@@ -17,11 +17,11 @@
 #
 
 if [ -h /bin ] ; then
-	libdirs="/usr/lib /usr/lib64"
-	progdirs="/usr/bin /usr/sbin /usr/libexec"
+	libdirs="/usr/lib /usr/lib64 /usr/local/lib64"
+	progdirs="/usr/bin /usr/sbin /usr/libexec /usr/local/bin /usr/local/sbin"
 else
-	libdirs="/lib /lib64 /usr/lib /usr/lib64"
-	progdirs="/bin /sbin /usr/bin /usr/sbin /usr/libexec"
+	libdirs="/lib /lib64 /usr/lib /usr/lib64 /usr/local/lib64"
+	progdirs="/bin /sbin /usr/bin /usr/sbin /usr/libexec /usr/local/bin /usr/local/sbin"
 fi
 FOUND=0
 
