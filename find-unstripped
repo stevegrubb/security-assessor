@@ -28,8 +28,5 @@ fi
 
 # Get executable files under /usr
 /usr/bin/find $DIR -type f \( -perm -0100 -or -perm -0010 -or -perm -0001 \) -exec /usr/bin/file {} \; 2>/dev/null | /bin/grep -E -v 'shared object|debug' | /bin/grep 'not stripped' | /bin/grep 'ELF' | /bin/awk '{ print $1 }' | /usr/bin/tr -d ':'
-if [ $? -eq 0 ] ; then
-	echo " No problems found"
-	exit 0
-fi
+
 exit 1
