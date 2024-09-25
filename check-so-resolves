@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Description: Recursively scans /opt for ELF files and checks for unresolvable shared object links.
+
+is_elf() {
+    local file_path="$1"
+    # Use 'file' command to determine file type
+    file_output=$(file "$file_path" 2>/dev/null)
+    if [[ $? -ne 0 ]]; then
+        echo "Warning: Could not determine file type for $file_path"
+        return 1
+    fi
+    # Check if 'ELF' is in the file type description
+    if echo "$file_output" | grep -q "ELF"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_dependencies() {
+    local file_path="$1"
+
+    # can't run ldd on non-executables
+    if [[ ! -x "$file_path" ]]; then
+        return
+    fi
+
+    # Use ldd to list dependencies; suppress standard error to handle broken links gracefully
+    ldd_output=$(ldd "$file_path" 2>&1)
+    ldd_status=$?
+
+    if [[ $ldd_status -ne 0 ]]; then
+        echo "Error: ldd failed for $file_path"
+        echo "ldd output: $ldd_output"
+        return
+    fi
+
+    # Check for "not found" in ldd output indicating unresolved dependencies
+    not_found=$(echo "$ldd_output" | grep "not found")
+    if [[ -n "$not_found" ]]; then
+        echo "Unresolvable shared objects in: $file_path"
+        echo "$not_found"
+        echo ""
+    fi
+}
+
+# Export functions and variables for use in subshells (if needed)
+export -f is_elf
+export -f check_dependencies
+
+DIRS="/opt /usr/local"
+for d in $DIRS
+do
+    echo "Scanning $d for ELF files and checking dependencies..."
+    find $d -type f 2>/dev/null | while IFS= read -r file; do
+        if is_elf "$file"; then
+            check_dependencies "$file"
+        fi
+    done
+done
+

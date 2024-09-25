@@ -124,6 +124,10 @@ echo -e "\nLooking for elf files that were somehow not stripped during install" 
 echo    "=====================================================================" | $TEE
 ./find-unstripped
 
+echo -e "\nLooking for elf files that have unresolved shared objects" | $TEE
+echo    "===========================================================" | $TEE
+./check-so-resolves
+
 # Network tests
 echo -e "\nListening processes" | $TEE
 echo      "===================" | $TEE
