@@ -1,0 +1,40 @@
+#!/bin/sh
+# dir-usage utility
+# part of the security-assessor project
+# Copyright (c) 2024 Steve Grubb. ALL RIGHTS RESERVED.
+#
+# This software may be freely redistributed under the terms of the GNU
+# public license.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+
+if [ $# -ge 2 ] ; then
+        echo "Usage: dir_usage [directory]" 1>&2
+        exit 1
+fi
+dir=`pwd`
+if [ $# -eq 1 ] ; then
+        if [ -d "$1" ] ; then
+		if [ $1 = "/" ] ; then dir="$1"
+		else dir=` echo $1 | sed '/\/$/s///g'`
+		fi
+        else
+                echo "Option passed in was not a directory" 1>&2
+                exit 1
+        fi
+fi
+list=`ls -a $dir 2>/dev/null`
+if [ "$dir" = "/" ] ; then dir=""; fi
+for file in $list
+do
+ if [ -h $dir/$file ] || [ $file = ".." ] || [ $file = "." ] ; then
+   continue
+ elif [ -d $dir/$file ] ; then
+  res=`echo "$dir/$file" | grep -E '^/dev|^/media|^/proc|^/srv|^/sys'`
+  if [ "x$res" != "x" ] ; then continue; fi
+  result=`du -sh $dir/$file 2>/dev/null`
+  if [ $? -eq 0 ] ; then echo "$result"; fi
+ fi
+done
