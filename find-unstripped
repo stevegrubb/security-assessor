@@ -12,8 +12,6 @@
 #
 # this program checks for elf files that were somehow not stripped
 
-echo "Looking for elf files that were somehow not stripped during install"
-
 DIR="/"
 if [ $# -ge 2 ] ; then
 	echo "Usage: find-unstripped [DIR]"
