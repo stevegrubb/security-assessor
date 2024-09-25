@@ -1,0 +1,37 @@
+#!/bin/sh
+# part of the security-assessor project
+# Copyright (c) 2024 Steve Grubb. ALL RIGHTS RESERVED.
+# sgrubb@redhat.com
+#
+# This software may be freely redistributed under the terms of the GNU
+# public license.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# this program checks for elf files that were somehow not stripped
+
+echo "Looking for elf files that were somehow not stripped during install"
+
+DIR="/"
+if [ $# -ge 2 ] ; then
+	echo "Usage: find-unstripped [DIR]"
+	exit 1
+fi
+if [ $# -eq 1 ] ; then
+        if [ -d "$1" ] ; then
+                DIR="$1"
+        else
+                echo "Option passed in was not a directory" 1>&2
+                exit 1
+        fi
+fi
+
+# Get executable files under /usr
+/usr/bin/find $DIR -type f \( -perm -0100 -or -perm -0010 -or -perm -0001 \) -exec /usr/bin/file {} \; 2>/dev/null | /bin/grep -E -v 'shared object|debug' | /bin/grep 'not stripped' | /bin/grep 'ELF' | /bin/awk '{ print $1 }' | /usr/bin/tr -d ':'
+if [ $? -eq 0 ] ; then
+	echo " No problems found"
+	exit 0
+fi
+exit 1

@@ -120,6 +120,9 @@ echo -e "\nLook for apps not changing groups correctly" | $TEE
 echo      "===========================================" | $TEE
 ./find-nodrop-groups | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | $TEE
 
+echo -e "\nLooking for elf files that were somehow not stripped during install" | $TEE
+echo    "=====================================================================" | $TEE
+./find-unstripped
 
 # Network tests
 echo -e "\nListening processes" | $TEE
