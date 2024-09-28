@@ -121,12 +121,17 @@ echo      "===========================================" | $TEE
 ./find-nodrop-groups | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | $TEE
 
 echo -e "\nLooking for elf files that were somehow not stripped during install" | $TEE
-echo    "=====================================================================" | $TEE
+echo      "===================================================================" | $TEE
 ./find-unstripped
 
 echo -e "\nLooking for elf files that have unresolved shared objects" | $TEE
-echo    "===========================================================" | $TEE
+echo      "=========================================================" | $TEE
 ./check-so-resolves
+
+echo -e "\nChecking if there are unapplied security updates" | $TEE
+echo      "================================================"  $TEE
+list=$(dnf --refresh -q --security check-update 2>/dev/null | grep -v '^$' | awk '{ print $1 }')
+if [ -z "$list" ] ; then echo "None" ; else echo $list | tr ' ' '\n' ; fi
 
 # Network tests
 echo -e "\nListening processes" | $TEE
