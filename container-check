@@ -16,6 +16,16 @@ if [ x$check = "x" ] ; then
         echo "You need to install the procps-ng package"
 	exit 1
 fi
+check="`which file 2>/dev/null`"
+if [ x$check = "x" ] ; then
+	echo "You need to install the file package"
+	exit 1
+fi
+check="`which find 2>/dev/null`"
+if [ x$check = "x" ] ; then
+	echo "You need to install the findutils package"
+	exit 1
+fi
 net_check="`which netcap 2>/dev/null`"
 if [ x$net_check = "x" ] ; then
 	echo "The scan is more complete if the libcap-ng-utils package were installed"
