@@ -132,17 +132,17 @@ echo      "===========================================" | $TEE
 
 echo -e "\nLooking for elf files that were somehow not stripped during install" | $TEE
 echo      "===================================================================" | $TEE
-./find-unstripped
+./find-unstripped | $TEE
 
 echo -e "\nLooking for elf files that have unresolved shared objects" | $TEE
 echo      "=========================================================" | $TEE
-./check-so-resolves
+./check-so-resolves | $TEE
 
 if [ -x /usr/bin/dnf ] ; then
 	echo -e "\nChecking if there are unapplied security updates" | $TEE
 	echo      "================================================"  $TEE
 	list=$(dnf --refresh -q --security check-update 2>/dev/null | grep -v '^$' | awk '{ print $1 }')
-	if [ -z "$list" ] ; then echo "None" ; else echo $list | tr ' ' '\n' ; fi
+	if [ -z "$list" ] ; then echo "None" ; else echo $list | tr ' ' '\n' ; fi | $TEE
 fi
 
 # Network tests
@@ -153,7 +153,7 @@ echo      "===================" | $TEE
 echo -e "\nPrivileged listening processes" | $TEE
 echo      "==============================" | $TEE
 if [ x$net_check = "x" ] ; then
-	echo "skipped - netcap not found"
+	echo "skipped - netcap not found" | $TEE
 else
 	netcap | $TEE
 fi
