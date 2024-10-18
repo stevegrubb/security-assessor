@@ -52,6 +52,7 @@ files=`rpm -ql $1`
 
 # Prevent garbled output when doing --all.
 skip_current=0
+source ./is_elf
 
 for f in $files
 do
@@ -72,7 +73,7 @@ do
 		fi
 		continue
 	fi
-	if ! file "$f" | grep -qw 'ELF'; then
+	if ! is_elf "$f" ; then
 		continue
 	fi
 	STACK="no"
