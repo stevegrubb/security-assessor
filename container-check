@@ -140,7 +140,7 @@ echo      "=========================================================" | $TEE
 
 if [ -x /usr/bin/dnf ] ; then
 	echo -e "\nChecking if there are unapplied security updates" | $TEE
-	echo      "================================================"  $TEE
+	echo      "================================================" | $TEE
 	list=$(dnf --refresh -q --security check-update 2>/dev/null | grep -v '^$' | awk '{ print $1 }')
 	if [ -z "$list" ] ; then echo "None" ; else echo $list | tr ' ' '\n' ; fi | $TEE
 fi
