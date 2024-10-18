@@ -148,7 +148,7 @@ fi
 pip=`which pip`
 if [ ! -z "$pip" ] ; then
 	echo -e "\nChecking python environment" | $TEE
-	echo      "==========================="  $TEE
+	echo      "===========================" | $TEE
 	pip check | $TEE
 fi
 
