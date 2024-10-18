@@ -1,22 +1,7 @@
 #!/bin/bash
 
 # Description: Recursively scans /opt for ELF files and checks for unresolvable shared object links.
-
-is_elf() {
-    local file_path="$1"
-    # Use 'file' command to determine file type
-    file_output=$(file "$file_path" 2>/dev/null)
-    if [[ $? -ne 0 ]]; then
-        echo "Warning: Could not determine file type for $file_path"
-        return 1
-    fi
-    # Check if 'ELF' is in the file type description
-    if echo "$file_output" | grep -q "ELF"; then
-        return 0
-    else
-        return 1
-    fi
-}
+source ./is_elf
 
 check_dependencies() {
     local file_path="$1"
@@ -54,7 +39,7 @@ for d in $DIRS
 do
     echo "Scanning $d for ELF files and checking dependencies..."
     find $d -type f 2>/dev/null | while IFS= read -r file; do
-        if is_elf "$file"; then
+        if is_elf "$file" ; then
             check_dependencies "$file"
         fi
     done

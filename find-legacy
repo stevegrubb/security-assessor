@@ -13,6 +13,7 @@ else
 	progdirs="/bin /sbin /usr/bin /usr/sbin /usr/libexec"
 fi
 FOUND=0
+source ./is_elf
 
 check() {
 	xx=`readelf -sW $1 | awk 'NF>7 { print $8}' 2>/dev/null`
@@ -85,8 +86,7 @@ scan () {
 		files=`/usr/bin/find $d -name "$2" -type f 2>/dev/null`
 		for f in $files
 		do
-			echo $f | /usr/bin/file -n -f - 2>/dev/null | grep ELF >/dev/null
-			if [ $? -eq 0 ] ; then
+			if is_elf "$f" ; then
 				check $f
 			fi
 		done

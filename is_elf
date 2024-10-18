@@ -1,0 +1,7 @@
+is_elf() {
+    if head -c 4 "$1" 2>/dev/null | grep -q $'\x7fELF'; then
+        return 0
+    else
+        return 1
+    fi
+}
